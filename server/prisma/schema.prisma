@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  password String
+
+  places          Place[]
+  stuffs          Stuff[]
+  expirationDates ExpirationDate[]
+  calendars       Calendar[]
+}
+
+model Place {
+  id     String @id @default(uuid())
+  name   String
+  userId String
+
+  user   User            @relation(fields: [userId], references: [id])
+  stuffs StuffOnPlaces[]
+}
+
+model Stuff {
+  id     String @id @default(uuid())
+  name   String
+  userId String
+
+  user   User            @relation(fields: [userId], references: [id])
+  places StuffOnPlaces[]
+}
+
+model StuffOnPlaces {
+  stuffId String
+  stuff   Stuff  @relation(fields: [stuffId], references: [id])
+  placeId String
+  place   Place  @relation(fields: [placeId], references: [id])
+
+  @@id([stuffId, placeId])
+}
+
+model ExpirationDate {
+  id         String   @id @default(uuid())
+  name       String
+  expiration DateTime
+  notify     Boolean  @default(false)
+  userId     String
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Calendar {
+  id       String   @id @default(uuid())
+  name     String
+  note     String
+  noteDate DateTime
+  notify   Boolean  @default(false)
+  userId   String
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model EmailLog {
+  id             String   @id @default(uuid())
+  recipientEmail String
+  subject        String
+  body           String
+  sentAt         DateTime @default(now())
+  isSuccess      Boolean
+}
